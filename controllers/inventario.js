@@ -29,10 +29,10 @@ const getInventarioByID = async (req = request, res = response) => {
     const query = { _id: id };
     const inventarioBD = await Inventario.findOne(query);
     if (!inventarioBD) {
-        return res.status(400).json({
-          msj: "No existe inventario",
-        });
-      }
+      return res.status(400).json({
+        msj: "No existe inventario",
+      });
+    }
     res.json(inventarioBD);
   } catch (e) {
     return res.status(500).json({
@@ -44,7 +44,18 @@ const getInventarioByID = async (req = request, res = response) => {
 // crea un inventario
 const createInventario = async (req = request, res = response) => {
   try {
-    const { serial, modelo, usuario, marca, estado, tipoEquipo } = req.body;
+    const {
+      serial,
+      modelo,
+      usuario,
+      marca,
+      estado,
+      tipoEquipo,
+      descripcion,
+      foto,
+      color,
+      precio,
+    } = req.body;
 
     const inventarioBD = await Inventario.findOne({
       $or: [{ serial }, { modelo }],
@@ -90,7 +101,18 @@ const createInventario = async (req = request, res = response) => {
         msj: "No existe el tipo de equipo",
       });
     }
-    const data = req.body;
+    const data = {
+      serial,
+      modelo,
+      descripcion,
+      foto,
+      color,
+      precio,
+      usuario,
+      marca,
+      estado,
+      tipoEquipo,
+    };
     const inventario = new Inventario(data);
     await inventario.save();
     res.status(201).json(inventario);
@@ -101,7 +123,7 @@ const createInventario = async (req = request, res = response) => {
   }
 };
 
-// actualizar un inventario por Id 
+// actualizar un inventario por Id
 const updateInventario = async (req = request, res = response) => {
   try {
     const { id } = req.params;
@@ -186,33 +208,33 @@ const uploadImage = async (req = request, res = response) => {
     });
   }
   const nombreTemp = `${uuidv4()}.${extension}`;
-  const rutaSubida = path.join(__dirname, '../uploads', nombreTemp);
-  foto.mv(rutaSubida, e => {
-      if(e){
-          return res.status(500).json({error: e})
-      }
+  const rutaSubida = path.join(__dirname, "../uploads", nombreTemp);
+  foto.mv(rutaSubida, (e) => {
+    if (e) {
+      return res.status(500).json({ error: e });
+    }
   });
   const data = {};
   data.foto = nombreTemp;
-  const inv = await Inventario.findByIdAndUpdate(id, data, {new: true} );
-  if(!inv){
-      return res.status(400).json({mensaje: 'Error al actualizar'});
+  const inv = await Inventario.findByIdAndUpdate(id, data, { new: true });
+  if (!inv) {
+    return res.status(400).json({ mensaje: "Error al actualizar" });
   }
-  res.status(201).json({msj: 'Se subió la foto'})
+  res.status(201).json({ msj: "Se subió la foto" });
 };
 
 const getFotoById = async (req = request, res = response) => {
-    const { id } = req.params;
-    const inventarioBD = await Inventario.findOne({ _id: id });
-    if(!inventarioBD){
-        return res.status(400).json({ Error: 'No existe el inventario'})
-    }
-    const nombreFoto = inventarioBD.foto;
-    const rutaImg = path.join(__dirname, '../uploads', nombreFoto);
-    if(fs.existsSync(rutaImg)){
-        res.sendFile(rutaImg);
-    };
-}
+  const { id } = req.params;
+  const inventarioBD = await Inventario.findOne({ _id: id });
+  if (!inventarioBD) {
+    return res.status(400).json({ Error: "No existe el inventario" });
+  }
+  const nombreFoto = inventarioBD.foto;
+  const rutaImg = path.join(__dirname, "../uploads", nombreFoto);
+  if (fs.existsSync(rutaImg)) {
+    res.sendFile(rutaImg);
+  }
+};
 
 module.exports = {
   getInventarios,
@@ -220,5 +242,5 @@ module.exports = {
   createInventario,
   updateInventario,
   uploadImage,
-  getFotoById
+  getFotoById,
 };
